@@ -55,7 +55,7 @@
     "@anypoint-web-components/anypoint-listbox": "^1.0.4",
     "@anypoint-web-components/anypoint-menu-mixin": "^1.0.2",
     "@anypoint-web-components/anypoint-styles": "^1.0.1",
-    "@api-components/api-model-generator": "^0.3.1",
+    "@api-components/api-model-generator": "^0.4.0",
     "@commitlint/cli": "^13.2.1",
     "@commitlint/config-conventional": "^13.2.0",
     "@open-wc/building-rollup": "^1.2.6",
