@@ -523,7 +523,34 @@ export class ApiConsole extends AmfHelperMixin(LitElement) {
    * `request`.
    */
   _tryitHandler() {
+    if (this._isWebhookOperation(this.selectedShape, this.webApi)) {
+      return;
+    }
     this.page = 'request';
+  }
+
+  /**
+   * Whether `selected` is an OAS 3.1/3.2 top-level webhook operation.
+   * Webhooks have no invokable URL — the API calls the consumer, not the
+   * other way around — so the request/response "try it" panel doesn't
+   * apply to them.
+   * @param {String} selected Currently selected AMF shape (@id).
+   * @param {Object} webApi Computed AMF WebAPI model.
+   * @return {Boolean}
+   */
+  _isWebhookOperation(selected, webApi) {
+    if (!selected || !webApi || typeof this._computeWebhooks !== 'function') {
+      return false;
+    }
+    const webhooks = this._computeWebhooks(webApi);
+    if (!webhooks || !webhooks.length) {
+      return false;
+    }
+    const opKey = this._getAmfKey(this.ns.aml.vocabularies.apiContract.supportedOperation);
+    return webhooks.some((webhook) => {
+      const operations = this._ensureArray(webhook[opKey]);
+      return operations && operations.some((op) => op['@id'] === selected);
+    });
   }
 
   /**
@@ -793,7 +820,6 @@ export class ApiConsole extends AmfHelperMixin(LitElement) {
       inlineMethods,
       compatibility,
       outlined,
-      _noTryItValue,
       amf,
       selectedShape,
       selectedShapeType,
@@ -806,6 +832,7 @@ export class ApiConsole extends AmfHelperMixin(LitElement) {
       _noServerSelector,
       allowCustomBaseUri,
     } = this;
+    const noTryIt = this._noTryItValue || this._isWebhookOperation(selectedShape, this.webApi);
 
     return html`<api-documentation
       .amf="${amf}"
@@ -817,7 +844,7 @@ export class ApiConsole extends AmfHelperMixin(LitElement) {
       ?noServerSelector="${_noServerSelector}"
       ?allowCustomBaseUri="${allowCustomBaseUri}"
       .inlineMethods="${inlineMethods}"
-      .noTryIt="${_noTryItValue}"
+      .noTryIt="${noTryIt}"
       .baseUri="${baseUri}"
       .redirectUri="${redirectUri}"
       .scrollTarget="${scrollTarget}"

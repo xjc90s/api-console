@@ -374,9 +374,13 @@ export class ApiConsoleApp extends ApiConsole {
    * @return {TemplateResult} Template for the api documentation section
    */
   _apiDocumentationTemplate() {
+    // Webhooks have no invokable URL: the inline panel would render broken
+    // (no server/URL to send a request to) even though there's no "Try it"
+    // button to gate it, so the webhook check has to happen here too.
+    const webhookSelected = this._isWebhookOperation(this.selectedShape, this.webApi);
     return html`<section class="api-docs">
     ${super._apiDocumentationTemplate()}
-    ${this._renderInlineTryit ? html`<div class="inline-request">
+    ${this._renderInlineTryit && !webhookSelected ? html`<div class="inline-request">
       ${this._bannerMessage()}
       ${this._requestPanelTemplate()}
     </div>` : ''}
