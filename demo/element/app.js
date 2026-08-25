@@ -22,6 +22,8 @@ class ApicApplication extends DemoBase {
       ['demo-api', 'Demo API'],
       ['multi-server', 'Multi Server API'],
       ['oas-3-api', 'OAS 3 API'],
+      ['oas31-webhooks', '★ OAS 3.1 - Webhooks (TD-0333486)'],
+      ['oas32-query-sse', '★ OAS 3.2 - QUERY + SSE (TD-0333486)'],
       ['async-api', 'AsyncAPI'],
       ['APIC-553', 'APIC-553'],
       ['APIC-557', 'APIC-557'],
