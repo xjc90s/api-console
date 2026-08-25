@@ -33,6 +33,8 @@ class ApicApplication extends DemoBase {
       ['demo-api-v4', 'AMF v4'],
       ['APIC-319', 'APIC-319'],
       ['multi-server', 'OAS multi server'],
+      ['oas31-webhooks', '★ OAS 3.1 - Webhooks (TD-0333486)'],
+      ['oas32-query-sse', '★ OAS 3.2 - QUERY + SSE (TD-0333486)'],
       ['async-api', 'AsyncAPI'],
       ['APIC-560', 'AsyncAPI560'],
       ['APIC-570', 'AsyncAPI570'],
