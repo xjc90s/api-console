@@ -25,6 +25,8 @@ class ApicApplication extends DemoBase {
       ['data-type-fragment', 'RAML data type fragment'],
       ['demo-api', 'Demo API'],
       ['APIC-538', 'APIC-538'],
+      ['oas31-webhooks', '★ OAS 3.1 - Webhooks (TD-0333486)'],
+      ['oas32-query-sse', '★ OAS 3.2 - QUERY + SSE (TD-0333486)'],
     ];
   }
 

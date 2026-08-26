@@ -1,0 +1,106 @@
+openapi: 3.1.0
+info:
+  title: Webhooks + Schema Composition Spike
+  version: 1.0.0
+paths:
+  /pets:
+    get:
+      operationId: listPets
+      summary: List pets
+      responses:
+        "200":
+          description: A list of pets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Pet"
+
+# Top-level `webhooks` map of Path Item Objects, confirmed in OAS 3.1.0 spec
+# (versions/3.1.0.md, field `webhooks`, sibling to `paths`/`components`).
+webhooks:
+  newPet:
+    post:
+      operationId: newPetWebhook
+      summary: Notify subscriber of a newly created pet
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Pet"
+      responses:
+        "200":
+          description: Webhook received successfully
+
+components:
+  schemas:
+    Pet:
+      # allOf: base fields + discriminated extra fields
+      allOf:
+        - $ref: "#/components/schemas/PetBase"
+        - $ref: "#/components/schemas/PetKindFields"
+
+    PetBase:
+      type: object
+      required: [id, name]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        kind:
+          type: string
+          enum: [dog, cat]
+
+    # if/then/else conditional (JSON Schema 2020-12, dialect used by OAS 3.1)
+    PetKindFields:
+      if:
+        properties:
+          kind:
+            const: dog
+      then:
+        properties:
+          breed:
+            type: string
+        required: [breed]
+      else:
+        properties:
+          indoor:
+            type: boolean
+        required: [indoor]
+
+    # oneOf: mutually exclusive contact methods
+    ContactMethod:
+      oneOf:
+        - $ref: "#/components/schemas/EmailContact"
+        - $ref: "#/components/schemas/PhoneContact"
+
+    EmailContact:
+      type: object
+      required: [email]
+      properties:
+        email:
+          type: string
+          format: email
+
+    PhoneContact:
+      type: object
+      required: [phone]
+      properties:
+        phone:
+          type: string
+
+    # anyOf: owner may have one or more identifiers present
+    OwnerIdentifiers:
+      anyOf:
+        - required: [ownerId]
+          properties:
+            ownerId:
+              type: integer
+        - required: [ownerEmail]
+          properties:
+            ownerEmail:
+              type: string
+              format: email

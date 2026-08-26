@@ -1,0 +1,71 @@
+openapi: 3.2.0
+info:
+  title: QUERY Method + SSE Streaming Spike
+  version: 1.0.0
+paths:
+  /pets:
+    # `query` is a Path Item Object fixed field (sibling to get/post/etc.),
+    # confirmed in OAS 3.2.0 spec (versions/3.2.0.md, field `path-item-query`):
+    # "A definition of a QUERY operation, as defined in the most recent IETF
+    # draft (draft-ietf-httpbis-safe-method-w-body) ... on this path."
+    # QUERY is safe/idempotent but carries a request body (unlike GET).
+    query:
+      operationId: queryPets
+      summary: Search pets using a structured filter body
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                kind:
+                  type: string
+                maxAge:
+                  type: integer
+      responses:
+        "200":
+          description: Matching pets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    name:
+                      type: string
+
+  /pets/events:
+    get:
+      operationId: streamPetEvents
+      summary: Stream pet lifecycle events via Server-Sent Events
+      responses:
+        "200":
+          description: A live stream of pet events
+          content:
+            # Confirmed in OAS 3.2.0 spec: `itemSchema` on the Media Type
+            # Object describes each individual event in a streaming/
+            # sequential media type; `text/event-stream` is explicitly
+            # called out under "Special Considerations for Server-Sent
+            # Events" and demonstrated with itemSchema in that section.
+            text/event-stream:
+              itemSchema:
+                type: object
+                required: [event]
+                properties:
+                  event:
+                    type: string
+                    enum: [petCreated, petUpdated, petDeleted]
+                  data:
+                    contentMediaType: application/json
+                    contentSchema:
+                      type: object
+                      required: [id]
+                      properties:
+                        id:
+                          type: integer
+                  retry:
+                    type: integer

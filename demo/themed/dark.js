@@ -16,7 +16,9 @@ class ApicApplication extends DemoBase {
       ['httpbin', 'HTTPbin API'],
       ['data-type-fragment', 'RAML data type fragment'],
       ['demo-api', 'Demo API'],
-      ['grpc-test', 'gRPC Test API']
+      ['grpc-test', 'gRPC Test API'],
+      ['oas31-webhooks', '★ OAS 3.1 - Webhooks (TD-0333486)'],
+      ['oas32-query-sse', '★ OAS 3.2 - QUERY + SSE (TD-0333486)']
     ];
   }
 

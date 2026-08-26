@@ -37,6 +37,23 @@ class HelperElement extends AmfHelperMixin(Object) {}
 const helper = new HelperElement();
 
 /**
+ * Sets the model on the helper and returns the expanded model to navigate.
+ *
+ * amf 5.11.x emits models in flattened `@graph` form. The `amf` setter expands
+ * them internally (see AmfHelperMixin `_expand`), but the raw `@graph` model is
+ * not navigable by the `_compute*` helpers — passing it to `_computeApi`
+ * returns `undefined`. Callers must operate on the expanded model instead.
+ *
+ * @param {ApiModel} model Raw (possibly flattened/`@graph`) API model.
+ * @return {ApiModel} Expanded model.
+ */
+const expand = (model) => {
+  helper.amf = model;
+  const { amf } = helper;
+  return Array.isArray(amf) ? amf[0] : amf;
+};
+
+/**
  * @typedef {Object} ApiLoadOptions
  * @property {boolean=} compact Whether to download a compact version of an API
  * @property {string=} fileName Name of the API file, without the extension
@@ -104,8 +121,8 @@ AmfLoader.load = async (config = {}) => {
  * @return {WebApiModel} Model for the WebApi
  */
 AmfLoader.lookupWebApi = (model) => {
-  helper.amf = model;
-  return helper._computeApi(model);
+  const expanded = expand(model);
+  return helper._computeApi(expanded);
 };
 
 /**
@@ -115,8 +132,8 @@ AmfLoader.lookupWebApi = (model) => {
  * @return {EndpointModel|undefined} Model for the endpoint
  */
 AmfLoader.lookupEndpoint = (model, endpoint) => {
-  helper.amf = model;
-  const webApi = helper._computeApi(model);
+  const expanded = expand(model);
+  const webApi = helper._computeApi(expanded);
   return helper._computeEndpointByPath(webApi, endpoint);
 };
 
@@ -175,8 +192,8 @@ AmfLoader.lookupEndpointOperation = (model, endpoint, operation) => {
  * @return {SecurityModel}
  */
 AmfLoader.lookupSecurity = (model, name) => {
-  helper.amf = model;
-  const webApi = helper._hasType(model, helper.ns.aml.vocabularies.document.Document)? helper._computeApi(model): model;
+  const expanded = expand(model);
+  const webApi = helper._hasType(expanded, helper.ns.aml.vocabularies.document.Document)? helper._computeApi(expanded): expanded;
   const declares = helper._computeDeclares(webApi) || [];
   let result = declares.find((item) => {
     if (item instanceof Array) {
@@ -192,7 +209,7 @@ AmfLoader.lookupSecurity = (model, name) => {
     result = result[0];
   }
   if (!result) {
-    const references = helper._computeReferences(model) || [];
+    const references = helper._computeReferences(expanded) || [];
     for (let i = 0, len = references.length; i < len; i++) {
       if (!helper._hasType(references[i], helper.ns.aml.vocabularies.document.Module)) {
         continue;
@@ -213,8 +230,8 @@ AmfLoader.lookupSecurity = (model, name) => {
  * @return {TypeModel}
  */
 AmfLoader.lookupType = (model, name) => {
-  helper.amf = model;
-  const webApi = helper._hasType(model, helper.ns.aml.vocabularies.document.Document)? helper._computeApi(model): model;
+  const expanded = expand(model);
+  const webApi = helper._hasType(expanded, helper.ns.aml.vocabularies.document.Document)? helper._computeApi(expanded): expanded;
   const declares = helper._computeDeclares(webApi) || [];
   let result = declares.find((item) => {
     if (item instanceof Array) {
@@ -226,7 +243,7 @@ AmfLoader.lookupType = (model, name) => {
     result = result[0];
   }
   if (!result) {
-    const references = helper._computeReferences(model) || [];
+    const references = helper._computeReferences(expanded) || [];
     for (let i = 0, len = references.length; i < len; i++) {
       if (!helper._hasType(references[i], helper.ns.aml.vocabularies.document.Module)) {
         continue;
@@ -247,8 +264,8 @@ AmfLoader.lookupType = (model, name) => {
  * @return {DocumentationModel}
  */
 AmfLoader.lookupDocumentation = (model, name) => {
-  helper.amf = model;
-  const webApi = helper._computeApi(model);
+  const expanded = expand(model);
+  const webApi = helper._computeApi(expanded);
   const key = helper._getAmfKey(helper.ns.aml.vocabularies.core.documentation);
   const docs = helper._ensureArray(webApi[key]);
   return docs.find((item) => {
@@ -265,10 +282,7 @@ AmfLoader.lookupDocumentation = (model, name) => {
  * @return {EncodeModel[]}
  */
 AmfLoader.lookupEncodes = (model) => {
-  if (model instanceof Array) {
-    model = model[0];
-  }
-  helper.amf = model;
+  const expanded = expand(model);
   const key = helper._getAmfKey(helper.ns.aml.vocabularies.document.encodes);
-  return helper._ensureArray(model[key]);
+  return helper._ensureArray(expanded[key]);
 };
